@@ -1,0 +1,9 @@
+02.17.15
+Beginning work on the "Proof of Principle" as per the 12.19.14 Meeting Notes - Plan 2
+
+The notes state that we are to:
+  - Pick one slice - extract slice from dataset with FT on RO (i.e. in dim space) and no FT on PE1 and PE2 (aka PE and SL)
+  - Isotropic undersampling (I think this is a bad idea)
+  - Recon slices independently with Lustig code (using $A psi[m] + B TV[m]$)
+  - Add a directional similarity term to the recon (so we can recon similar slices simulataneously) ($C ||m_j - m_k||_2 f(vec{d_j}\cdotvec{d_k}))$
+    - However, the form of $f((vec{d_j}\cdotvec{d_k}))$ is unknown yet

@@ -1,0 +1,112 @@
+Date: December 02, 2014
+
+Some notes about making our ported version for SparseMRI - i.e. Compressed Sensing
+Anthony Salerno
+
+
+Legend:
+- Notes
+>>> Questions about concepts
+> Questions about code
+### Will encase codes and should have a line notation
+*** Major Information that needs to be looked at, at a later time
+
+Analyzing the code demo_SheppLoganTV.m, going from top to bottom, and looking at each code to try and understand what it does. A major note that needs to be stated is that each of the codes here will be commented as much as possible in the code.
+
+Note that each of the datasets that can be created using this software that are not generally recognized by MATLAB have their own systems of how they'll be worked with, depending on the types of datasets that they are. They are:
+  - @NUFFT
+  - @p2DFT
+  - @TICDT
+  - @TVOP
+  - @Wavelet
+
+PDF - utils/genPDF.m
+genPDF is able to build a probability density function for 1D and 2D datasets
+  - I will need to complete this to handle 3D, though it shouldn't be too difficult, just need to look at the solution in 3D - this can be done in the same sense as 2D but may be a little more difficult to visualize
+  - The data looks at an L1 or L2 distance measure - this I don't quite well understand yet.
+  - However, it is also noted that if we plan on fully sampling the z direction, it may be worthwhile to have a full slice of kz space done, OR have this 2D image used as 3D (i.e. z-stacked) --> I don't know which is better in this case
+  - A line of code I don't get is as follows:
+    ### Line 78
+      if floor(sum(pdf(:))) > PCTG
+        error('infeasible without undersampling dc, increase p');
+      end
+    ###
+    > Why is this infeasible?
+  >>> What exactly is the benefit of having N = PDF, where N is the overall sum of the PDF?
+  - As I put as a note in the code, I'd add some tolerance into the code
+
+
+Sampling - utils/genSampling.m
+genSampling seems to be the code that will dictate the exact map of how everything is going to be sampled in the datasets.
+  - The first thing that seems to happen is a map to see if values are chosen - annotated in the code as well
+  - A map is created with random numbers and then a check - if the value is lower than the pdf map, then that pixel is good, else it is a zero and removed through pseudosampling
+  - This code effectively builds the map that we want to use for the code - it is a pseudoundersampling system that uses the PDF to ensure that the mapping is done correctly
+  
+
+The phantom is then built from a Shepp-Logan, all in a MATLAB toolbox kit, and then some noise is added to it
+  - This generates the all important 'im' variable, which is the image!
+
+Fourier Sampling Operator - p2DFT.m
+p2DFT has the main idea of building a "Partial Fourier Operator" in 2 Dimensions. This should be generalizable (albeit not readily) using some tensor mathematics
+  - This code doesn't seem to do much, except change the class of everything into this "p2DFT" format - I don't see the value in this
+  >>> What exactly is the point of doing this in that case? What does this bring to the code in the p2DFT format?
+    - As a small answer to this question, it seems that the information comes from the data in the folder @p2DFT, in the mtimes.m file!
+  - If this is removed, it is merely a structure with some relatively basic information in it, however it has the k map in it, so that is probably where the majority of the information comes from...
+    - As a test, I multiplied the data by k, just that "sampling" map that we had & it did NOT give even close to the same resul, which may be an effect of how Matlab has been told to work with the "phase correction" in the p2DFT datatype
+  *** AS A MAJOR ADDITIONAL NOTE TO THIS INFORMATION, THE @p2DFT FOLDER NEEDS TO BE ANALYZED IN FULL, SO THAT WE KNOW EXACTLY WHAT IS BEING DONE IN THE DATA ***
+  - The major benefit of using p2DFT files is their ability to handle the change of data from the phase informatin that is added. 
+    > How does this relate to our data? Would we be able to incorporate this into the data, and if so, how big would the data be? It seems like the phase information is just a single value, but that may just be demo_SheppLoganTV specific
+
+On line 50, this first does a division by the PDF, element by element, to account for the greater likelihood of choices for points with higher PDF values, as a normalization. After this, there is a straight multiplication by the FT'
+  - This multiplication uses the mtimes in @p2DFT, and this takes into account the phase that was added
+  - The first thing that is then shown is this value, the partial Fourier transform applied to the data (undersampled k-space, zero filled)
+
+XFM - the method of data recovery
+This is the heart of the recovery, as this defines the sparse space that we are going to use
+  - Firstly, it is incorporated into param, the main structure, which means that it's datatype will also be passed on. This is beneficial as it will allow for the information to be processed properly using a switch/case system
+  - This is really important to understand because we can readily alter this and see if different methods may be better for different types of data - i.e. diffusion may be better with wavelets, but embryo studies may be better with DCTs
+  
+Final Non-linear Conjugate Gradient - L1 Penalty - fnlCg.m
+The point of this code is to solve the question of the L1 penalty, and optimize the search for the L1 penalty values
+It minimizes: Phi(x) = ||F* W' *x - y||^2 + lambda1*|x|_1 + lambda2*TV(W'*x) 
+   - Does some preemptive variable allocation first to get ready
+   >>> What exactly are the Alpha and Beta values that they use here? How aere they determined - note that they are just given a value in init.m, as an initialization without any information given about them
+   - The gradient is calculated using a few other codes that will be discussed here:
+     wGradient.m
+        - This is the head code that controls the rest of them. It's purpose is to find the NET GRADIENT from all of the different contributing factors
+        gOBJ.m - DATA CONSISTENCY
+            - The way this works is that it looks at the change in the data with respect to with the sparsifying transform applied, in k-space, and then works it back into image space, then into the transform space once again.
+            > Why is this then multiplied by 2?
+            - MAIN POINT is to look at the differences between our first recon, i.e. with the undersampled data, and compare it to a recon done after sparsifying
+        gXFM.m - L1 operator
+            - This has the l1Norm multiplied by x, then by |x|^2 + a predef constant, for the L1 smoothing term, and put to the power of the norm/2 - 1.
+        gTV.m - Gradient of the TV Operator
+            - Again uses this norm
+            - Defines a Dx which is the TV (as a TVOP object, defined in @TVOP)
+            - performs gXFM on the Dx term, and then multiplies that value by the conj transform and then puts it into sparse space
+      - Overall, the code is meant to build up the total gradient by adding all of these together, along with their relative weights, as determined by the user
+    - The net dx is the negative of this gradient, and it is in the sparse space
+    - Then the "preobjective" and "objective" code are run...
+        preobjective.m - Precalculates the transforms
+            - Here, the point is to calculate the transforms once, so that we then just look at these specific variables and not have to calculate commonly used variables constantly - i.e. the k-space of the UNDERSAMPLED image with the density correction ("x" or XFM*im_dc)
+        objective.m - Does more calculations to check if we have met certain requirements
+            - Checking the difference between the sparsified data, plus a constant*the gradient data, minus the original dataset. In theory, this should just be the contributions from every other system in wGradient
+            - This then calculates the overall difference as calculated here - this is used then in the other code to make sure that the difference is great enough between the FTXFMtx values (noted as f0 and f1)
+                - In the next while loop, we want the f1 (res from OBJECTIVE.M) to be greater than f0 (res from PREOBJECTIVE.M) - alpha*t*|sum(dx.*g0)| --> so f1 > f0 - alpha*t*|dx|^2
+                    - if this fails, we change the value of t, and attempt it again, by mulitplying it by beta. Keep going until it succeeds
+                - We then will add what we've done to x, to have the iteration
+                - Do some work with the gradients in order to make them be useful for the next calculation
+                    - Now, however, dx isn't just the negative of the gradient, it has this ratio term
+                    > What exactly does this ratio term mean, see line 92
+    - Overall, this code is the heart of the iterative process, and will only stop if the k > ItnLim, however, I think we can use the dx norm more effectively, especially in 3D image space, as this will tell us if our difference is effectively small enough that we've reached our tolerance level that we're happy with
+    - The iterative power of it seems to be redundant in the demo, however, as "res" is x, which changes in each calculation of the loop - thus we only need this once, using an iteration limited, gradient tolerance limited, or bi-limited method of stopping the iterations.
+
+Masking
+
+It seems that the most important part of the entire reconstruction comes from the gradient as well as the partial Fourier Transform set.
+  - For 2D this is solved by merely doing some simple matrix multiplicaiton, however for 3D, we may need to put this into a tensor notation
+
+The FT is the partial FT - however, this is kind of difficult to look at - i.e. I don't know what the exact shape is per say
+  - On that note, I think it looks like the map from genSampling multiplied by k-space information
+
+FOR NOMENCLATURE AND USES OF VARIABLES, SEE THE CODE

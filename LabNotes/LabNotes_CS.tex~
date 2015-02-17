@@ -1,0 +1,64 @@
+\documentclass[pra,11 pt]{revtex4-1}
+
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{amsmath,mathrsfs}
+\usepackage{amssymb}
+\usepackage{enumerate}
+\usepackage{grffile}
+\title{Lab Notes for Compressed Sensing Coding}
+
+
+\newcommand{\me}{\mathrm{e}}
+\newcommand{\ep}{\varepsilon}
+\newcommand{\sectionbreak}{\clearpage\newpage}
+\newcommand{\mitem}{\item[--]}
+\newcommand{\bo}{\noindent\textbf}
+\newcommand{\etal}{\emph{et. al.}}
+
+\usepackage[nodisplayskipstretch]{setspace}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+\fancyhead[R]{Salerno}
+\fancyhead[C]{Lab Notes for Compressed Sensing Coding}
+\fancyhead[L]{MICe}
+
+\begin{document}
+
+\vfill
+
+  \begin{titlepage}
+    \vspace*{\fill}
+    \begin{center}
+      {\huge {Lab Notes for Compressed Sensing Coding}}\\[0.5cm]
+      {\large {Anthony Salerno}}\\[0.4cm]
+      \today
+    \end{center}
+    \vspace*{\fill}
+  \end{titlepage}
+
+\clearpage
+\newpage
+
+\noindent \emph{02.17.15}
+
+\bo{Introduction}\\
+Beginning work on the ``Proof of Principle" as per the 12.19.14 Meeting Notes - Plan 2
+
+The notes state that we are to:
+\begin{itemize}
+  \item Pick one slice - extract slice from dataset with FT on RO (i.e. in dim space) and no FT on PE1 and PE2 (aka PE and SL)
+  \item Isotropic undersampling (I think this is a bad idea)
+  \item Recon slices independently with Lustig code (using $\lambda_2 psi[m] + \lambda_1 TV[m]$)
+  \item Add a directional similarity term to the recon (so we can recon similar slices simulataneously) ($\lambda_3 ||m_j - m_k||_2 f(\vec{d_j} \cdot \vec{d_k}))$
+  \item However, the form of $f((\vec{d_j}\cdot \vec{d_k}))$ is still unknown
+\end{itemize}
+
+\bo{Hypothesis}\\
+To begin, today we should be able to get a decent code running that can do Lustig's code on any specified slice that we choose. I expect that the code will work as expected and provide a good rendition of the undersampled data with minimal alterations required. The hope is that we can use the basis of the code as an engine (that will need some optimization) in order to work with the data as we so hope.
+
+\bo{Method}
+First spent a ridiculous amount of time getting \latex
+
+\end{document}
