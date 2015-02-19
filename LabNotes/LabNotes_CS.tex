@@ -63,10 +63,16 @@ The notes state that we are to:
 To begin, today we should be able to get a decent code running that can do Lustig's code on any specified slice that we choose. I expect that the code will work as expected and provide a good rendition of the undersampled data with minimal alterations required. The hope is that we can use the basis of the code as an engine (that will need some optimization) in order to work with the data as we so hope.
 
 
-\bo{Method}\\
+\bo{Notes - Unpolished}\\
 First spent a ridiculous amount of time getting \LaTeX up and running on this computer... But it works now! 
 
 The code is written both on my computer as well as on the lab computers -- via a central git on github -- using the same datasets as required. The datasets in use are Jacob's data, reconstructed purely using the standard recon algorithm (that is, no MATLAB involved).
+
+For all pushes and pulls, see the github repository. There are many (and it can be mapped by day!)
+
+The code is to be written such that it is built and any values that are above 1-sampFac will be included. This means that when we are actually tacking on the $r$ correction, we need to do it as $1-\frac{r}{\text{max}(r)}$
+
+Seem to have a problem with the values that I'm getting. The outer portions of k-space seem to have almost no chance of being chosen. With a penalty threshold of only 0.25 (given a sampFac of 0.5), only 40\% of values are chosen. Most of the lost points are on the corners of $k$-space, so this may be ok... However, I need to look into \textbf{possibly making the CS type sequence specific, for things like cylindrical acquisition}.
 
 
 \end{document}
