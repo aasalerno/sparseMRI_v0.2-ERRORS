@@ -55,7 +55,7 @@ if loc == 1
 elseif loc == 2
     dataUse = squeeze(dataRes(:,round(sl/dims(2)*dims2(2)),:));
 elseif loc == 3
-dataUse = squeeze(dataRes(:,:,round(sl/dims(3)*dims2(3))));
+    dataUse = squeeze(dataRes(:,:,round(sl/dims(3)*dims2(3))));
 end
 if isa(dataUse,'uint16')
     dataUse = double(dataUse);
@@ -74,9 +74,18 @@ end
 
 sz = size(fil);
 % Add the 1/r component
-[x,y] = abs(meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2))));
-
-
+[x,y] = meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2)));
+r = sqrt(x.^2+y.^2);
+fil2 = ones(sz)-fil*rand(sz(1),sz(2));
+for i = 1:sz(1)
+    for j = 1:sz(2)
+        if fil2(i,j) > (sampFac)
+            fil2(i,j) = 0;
+        else
+            fil2(i,j) = 1;
+        end
+    end
+end
 
 if ksp == 0
     % Normalize to be safe
