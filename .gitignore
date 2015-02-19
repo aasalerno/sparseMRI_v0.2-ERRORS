@@ -1,9 +1,12 @@
 <<<<<<< HEAD
 *.aux
-*.~
+*.m~
 *.log
 =======
 *.asv
 *.mnc
 *.out
+*.tex~
+*.ps
+*.dvi
 >>>>>>> 420b9b8dce5c50570aab00f1f22a2f66f5af4fed
