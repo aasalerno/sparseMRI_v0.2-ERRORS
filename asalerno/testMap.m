@@ -74,15 +74,17 @@ end
 
 sz = size(fil);
 % Add the 1/r component
-[x,y] = meshgrid(linspace(-1,1,sz(1)),linspace(-1,1,sz(2)));
+alim = 1/sqrt(2);
+[x,y] = meshgrid(linspace(-alim,alim,sz(1)),linspace(-alim,alim,sz(2)));
 r = sqrt(x.^2+y.^2);
-fil2 = ones(sz)-fil*rand(sz(1),sz(2));
+fil2 = (ones(sz)-fil).*rand(sz(1),sz(2)).*(1-r/max(r(:)));
+filTot = fil + fil2; % Build the total filter PDF
 for i = 1:sz(1)
     for j = 1:sz(2)
-        if fil2(i,j) > (sampFac)
-            fil2(i,j) = 0;
+        if filTot(i,j) < (0.5*sampFac)
+            filTot(i,j) = 0;
         else
-            fil2(i,j) = 1;
+            filTot(i,j) = 1;
         end
     end
 end
@@ -94,4 +96,4 @@ if ksp == 0
 end
 
 
-img = dataUse.*fil;
+img = dataUse.*filTot;
