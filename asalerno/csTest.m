@@ -45,9 +45,9 @@ end
 toc
 
 mask_lr = genLRSampling_pctg(DN,pctg,1,0); % Creates a mask just to view a low res image
-im_lr = ifft2c(zpad(im.*mask_lr,N(1),N(2)));
+im_lr = ifft2c(zpad(data.*mask_lr,N(1),N(2)));
 
-im_full = ifft2c(zpad(fft2c(im),N(1),N(2))); % Full image
+im_full = ifft2c(zpad(fft2c(data),N(1),N(2))); % Full image
 figure, imshow(abs(cat(2,im_full,im_lr,im_dc,im_res)),[]);
 title('original             low-res              zf-w/dc              TV');
 
