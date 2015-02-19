@@ -97,3 +97,6 @@ end
 
 
 img = dataUse.*filTot;
+figure; imshow(dataUse,[]);
+figure; imshow(filTot,[]);
+figure; imshow(img,[]);
