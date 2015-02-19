@@ -74,5 +74,10 @@ The code is to be written such that it is built and any values that are above 1-
 
 Seem to have a problem with the values that I'm getting. The outer portions of k-space seem to have almost no chance of being chosen. With a penalty threshold of only 0.25 (given a sampFac of 0.5), only 40\% of values are chosen. Most of the lost points are on the corners of $k$-space, so this may be ok... However, I need to look into \textbf{possibly making the CS type sequence specific, for things like cylindrical acquisition}.
 
+As of about 11:00 (commit 6a9cfb111c508df0af9a7222ba277ef118ba147), the code \texttt{testMap.m} is up and running. It will be used in order to actually build the map of what we are undersampling and then this will be pumped into an adapted version of Lustig's code in order to get it up and running.
+
+Encountered a bit of an issue with how the data is obtained. Since this information is only the magnitude of the data, I'm going to make a version that can handle taking the real and imaginary parts of the data, then feeding that through to the next set of functions.
+
+As of 12:08 PM, functionality has been added for the function to handle two files containing the real and imaginary parts of the $k$-space information!
 
 \end{document}
