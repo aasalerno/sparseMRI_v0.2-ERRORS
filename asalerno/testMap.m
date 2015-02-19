@@ -1,4 +1,4 @@
-function [img,filTot] = testMap(file,sty,sampFac,sl,loc,ksp,dir)
+function [img,filTot,pdf] = testMap(file,sty,sampFac,sl,loc,ksp,dir)
 %
 % testMap.m                         02/18/15
 %
@@ -23,7 +23,7 @@ end
 
 if isa(file,'cell')
     data = mincmap(file{1})+1i*mincmap(file{2});
-    
+    data = fftshift(fft(data,[],loc),loc);
     % Process it for powers of two
     dims = size(data);
     
@@ -40,7 +40,7 @@ if isa(file,'cell')
             elseif i == 2
                 data = data(:,1:end-1,:);
             elseif i == 3
-                data = data(:,1:end-1,:);
+                data = data(:,:,1:end-1);
             end
         end
     end
@@ -78,6 +78,7 @@ if isa(file,'cell')
     r = sqrt(x.^2+y.^2);
     fil2 = (ones(sz)-fil).*rand(sz(1),sz(2)).*(1-r/max(r(:)));
     filTot = fil + fil2; % Build the total filter PDF
+    pdf = (1-r).*(ones(sz)-fil)+fil;
     for i = 1:sz(1)
         for j = 1:sz(2)
             if filTot(i,j) < (0.5*sampFac)
