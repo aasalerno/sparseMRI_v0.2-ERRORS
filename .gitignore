@@ -1,2 +1,9 @@
+<<<<<<< HEAD
+*.aux
+*.~
+*.log
+=======
 *.asv
 *.mnc
+*.out
+>>>>>>> 420b9b8dce5c50570aab00f1f22a2f66f5af4fed
