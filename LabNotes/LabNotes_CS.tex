@@ -42,7 +42,7 @@
 \clearpage
 \newpage
 
-\noindent \emph{02.17.15 - 02.18.15}
+\noindent \emph{02.17.15 - 02.23.15}
 
 \bo{Introduction}\\
 Beginning work on the ``Proof of Principle" as per the 12.19.14 Meeting Notes - Plan 2
@@ -106,5 +106,16 @@ I changed the code \verb!testMap.m! pretty substantially, so see github for a pr
 
 After changing to Lustig's method of undersampling, we see some bigger differences, but, the undersampling kind of makes it look pretty bad. It may be how the FT (using this `\verb!p2DFT!') instead of just doing an FFT as it is done in MATLAB. This seems like something weird that they don't need to do, as it just makes the data look bad... Though there must be a reason for this
 
+As it stands -- 4:00PM 02/23/15 -- this is as far as I can go without further understanding how well everything is going to work for the perpendicular and parallel to the gradient direction for the undersampling technique.
+
+
+\newpage
+\bo{\emph{Simulations}}
+
+\bo{Introduction}\\
+Here what we want to ensure is that by applying specific filters, we are obtaining what we expect. The expectation is that using a mask that is parallel to the gradient direction (applied in $k$-space) is going to look significantly worse than a mask applied perpendicular to the gradient direction.
+
+\bo{Hypothesis}\\
+Using a simulation, we will be able to tell distinct differences beteween the use of the two different maps. The map using a perpendicular mask on the undersampled $k$-space will look better than the data undersampled using the parallel mask, as the smearing will not be as bad in the cross direction of the diffusion.
 
 \end{document}
