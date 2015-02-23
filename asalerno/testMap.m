@@ -1,4 +1,4 @@
-function img = testMap(file,sty,sl,loc,dir)
+function [img,fil] = testMap(file,sty,sl,loc,dir)
 %
 % testMap.m                         02/18/15
 %
@@ -61,9 +61,12 @@ if isa(file,'cell')
     img = fftshift(fft2(dataUse));
     
 %     % Build the basis of the filter
-%     if strcmp(sty,'par') || strcmp(sty,'per')
-%         slp = dir(2)/dir(1);
-%         fil = linefilt(dataUse,slp,sampFac/2);
+    if strcmp(sty,'par') || strcmp(sty,'per')
+        slp = dir(2)/dir(1);
+        fil = linefilt(dataUse,slp,sampFac/2);
+    else
+        fil = zeros(size(dataUse));
+    end
 %     elseif strcmp(sty,'circ')
 %         fil = circfilt(dataUse,sampFac/2);
 %     elseif strcmp(sty,'lores') || strcmp(sty,'sq')

@@ -1,55 +1,62 @@
+close all;
+clear all;
 file = {'/projects/muisjes/asalerno/CS/data/RealImgRaw.10.18.mnc' ...
     '/projects/muisjes/asalerno/CS/data/ImagImgRaw.10.18.mnc'};
 sty = 'circ'; % Fully sampled region style
-sampFac = 0.75; % Undersampling factor
-sl = 100; % slice that we want to get
+sampFac = 0.33; % Undersampling factor
+sl = 200; % slice that we want to get
 loc = 1;
-im = testMap(file,sty,sl,loc);
+[im,fil] = testMap(file,sty,sl,loc);
+data = fft2(im);
 
-N = size(data);		% image Size
+N = size(im);		% image Size
 DN = N;         	% data Size
 pctg = sampFac;  	% undersampling factor
 P = 5;              % Variable density polymonial degree
-TVWeight = 0.01; 	% Weight for TV penalty
-xfmWeight = 0.01;	% Weight for Transform L1 penalty
-Itnlim = 8;         % Number of iterations
+TVWeight = 0.1; 	% Weight for TV penalty
+xfmWeight = 0.1;	% Weight for Transform L1 penalty
+Itnlim = 30;         % Number of iterations
+
+% initialize Parameters for reconstruction
+phmask = zpad(hamming(6)*hamming(6)',N(1),N(2)); %mask to grab center frequency
+phmask = phmask/max(phmask(:));			 %for low-order phase estimation and correction
+ph = exp(1i*angle((ifft2c(data.*phmask))));
+
+
 
 % generate variable density random sampling
-pdf = genPDF(DN,P,pctg, 2 ,0.1,0);	% generates the sampling PDF - L2
+pdf = genPDF(DN,P,pctg,2,0.1,0);	% generates the sampling PDF - L2
 % In this case, there is a clear dropoff in the density of the sampling as
 % one gets away from the centre - optially it appears as if there is an
 % isotropic fall off
 k = genSampling(pdf,10,60);		% generates a sampling pattern
-
+k = k | fil;
 % Generate the required operators
-FT = p2DFT(k,N,1,2);
-data = FT*im;
+FT = p2DFT(k,N,ph,2);
 XFM = Wavelet('Daubechies',6,4);	% Wavelet - gives a 1x1 matrix, of value 1
 %XFM = TIDCT(8,4);			% DCT
 %XFM = 1;				% Identity transform
 
 
-% initialize Parameters for reconstruction
-param = init;
-param.FT = FT;
-param.XFM = XFM;
-param.TV = TVOP;
-param.data = data;
-param.TVWeight =TVWeight;     % TV penalty
-param.xfmWeight = xfmWeight;  % L1 wavelet penalty
-param.Itnlim = Itnlim;
+params = init;
+params.FT = FT;
+params.XFM = XFM;
+params.TV = TVOP;
+params.data = data;
+params.TVWeight =TVWeight;     % TV penalty
+params.xfmWeight = xfmWeight;  % L1 wavelet penalty
+params.Itnlim = Itnlim;
 
-im_dc = FT'*(data./pdf);	% init with zf-w/dc (zero-fill with density compensation)
+
+im_dc = fftshift(FT'*(data./pdf));	% init with zf-w/dc (zero-fill with density compensation)
 res = XFM*im_dc; % This is the undersampled image
 
 
 x0 = res; % Undersampled
-params = param;
-
 
 tic
 for n=1:Itnlim
-    res = fnlCg(res,param);
+    res = fnlCg(res,params);
     im_res = XFM'*res;
     if n==Itnlim; imshow(abs(im_res),[]); end
 end
@@ -57,11 +64,12 @@ toc
 
 figure;
 subplot(131);
-imshow(abs(im_dc),[]);
+imshow(flipud(abs(im_dc)'),[]);
 subplot(132);
-imshow(abs(im_res),[]);
+imshow(flipud(abs(im_res)'),[]);
 subplot(133);
-imshow(abs(im_res)-abs(im_dc),[]);
+imshow(flipud(-(abs(im_res)-abs(im_dc))'),[]);
+colorbar
 suptitle('Original undersampled           CS            Residual')
 % mask_lr = genLRSampling_pctg(DN,pctg,1,0); % Creates a mask just to view a low res image
 % im_lr = ifft2c(zpad(data.*mask_lr,N(1),N(2)));
