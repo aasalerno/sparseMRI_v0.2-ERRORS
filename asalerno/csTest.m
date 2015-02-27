@@ -1,10 +1,10 @@
 close all;
 clear all;
-file = {'/projects/muisjes/asalerno/CS/data/RealImgRaw.10.18.mnc' ...
-    '/projects/muisjes/asalerno/CS/data/ImagImgRaw.10.18.mnc'};
+file = {'/projects/muisjes/asalerno/CS/data/RealImgRaw.10.28.mnc' ...
+    '/projects/muisjes/asalerno/CS/data/ImagImgRaw.10.28.mnc'};
 sty = 'circ'; % Fully sampled region style
-sampFac = 0.33; % Undersampling factor
-sl = 200; % slice that we want to get
+sampFac = 0.5; % Undersampling factor
+sl = 250; % slice that we want to get
 loc = 1;
 [im,fil] = testMap(file,sty,sl,loc);
 data = fft2(im);
@@ -62,15 +62,20 @@ for n=1:Itnlim
 end
 toc
 
-figure;
-subplot(131);
-imshow(flipud(abs(im_dc)'),[]);
-subplot(132);
+h = figure;
+subplot(121);
+imshow(flipud(abs(im)'),[]);
+subplot(122);
 imshow(flipud(abs(im_res)'),[]);
-subplot(133);
-imshow(flipud(-(abs(im_res)-abs(im_dc))'),[]);
-colorbar
-suptitle('Original undersampled           CS            Residual')
+
+st = input('Save?');
+if strcmp('y',st(1))
+    saveas(h,['/micehome/asalerno/Dropbox/CSRecon' num2str(sl) '.jpg'])
+end
+% subplot(133);
+% imshow(flipud(-(abs(im_res)-abs(im_dc))'),[]);
+% colorbar
+% suptitle('Original undersampled                        CS Recon')
 % mask_lr = genLRSampling_pctg(DN,pctg,1,0); % Creates a mask just to view a low res image
 % im_lr = ifft2c(zpad(data.*mask_lr,N(1),N(2)));
 % 

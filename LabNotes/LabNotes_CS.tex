@@ -118,4 +118,5 @@ Here what we want to ensure is that by applying specific filters, we are obtaini
 \bo{Hypothesis}\\
 Using a simulation, we will be able to tell distinct differences beteween the use of the two different maps. The map using a perpendicular mask on the undersampled $k$-space will look better than the data undersampled using the parallel mask, as the smearing will not be as bad in the cross direction of the diffusion.
 
+The code is written in \verb!buildLambda.m!. It is currently built just to handle a 2D case and then \emph{eventually} handled to build a 3D. In order to make it work with the code, an idea is to make it have a $z$-stack (in our case, a $y$ stack, or a `read-out" stack). 
 \end{document}
