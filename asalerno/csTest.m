@@ -1,9 +1,12 @@
-close all;
-clear all;
-file = {'/projects/muisjes/asalerno/CS/data/RealImgRaw.10.18.mnc' ...
-    '/projects/muisjes/asalerno/CS/data/ImagImgRaw.10.18.mnc'};
+% close all;
+% clear all;
+%file = {'/projects/muisjes/asalerno/CS/data/RealImgRaw.10.18.mnc' ...
+%    '/projects/muisjes/asalerno/CS/data/ImagImgRaw.10.18.mnc'};
+%file = {'C:\Users\saler_000\Documents\raw\real\RealImgRaw.2.25.mnc' ...
+%    'C:\Users\saler_000\Documents\raw\imag\ImagImgRaw.2.25.mnc'};
+file = {'C:\Users\saler_000\Dropbox\RealImgRaw.6.18.mnc' 'C:\Users\saler_000\Dropbox\ImagImgRaw.6.18.mnc'};
 sty = 'circ'; % Fully sampled region style
-sampFac = 0.33; % Undersampling factor
+sampFac = 0.5; % Undersampling factor
 sl = 200; % slice that we want to get
 loc = 1;
 [im,fil] = testMap(file,sty,sl,loc);
@@ -13,9 +16,9 @@ N = size(im);		% image Size
 DN = N;         	% data Size
 pctg = sampFac;  	% undersampling factor
 P = 5;              % Variable density polymonial degree
-TVWeight = 0.1; 	% Weight for TV penalty
-xfmWeight = 0.1;	% Weight for Transform L1 penalty
-Itnlim = 30;         % Number of iterations
+TVWeight = 1; 	% Weight for TV penalty
+xfmWeight = 1;	% Weight for Transform L1 penalty
+Itnlim = 5;         % Number of iterations
 
 % initialize Parameters for reconstruction
 phmask = zpad(hamming(6)*hamming(6)',N(1),N(2)); %mask to grab center frequency
@@ -33,7 +36,7 @@ k = genSampling(pdf,10,60);		% generates a sampling pattern
 k = k | fil;
 % Generate the required operators
 FT = p2DFT(k,N,ph,2);
-XFM = Wavelet('Daubechies',6,4);	% Wavelet - gives a 1x1 matrix, of value 1
+XFM = Wavelet('Daubechies',8,10);	% Wavelet - gives a 1x1 matrix, of value 1
 %XFM = TIDCT(8,4);			% DCT
 %XFM = 1;				% Identity transform
 
@@ -56,21 +59,29 @@ x0 = res; % Undersampled
 
 tic
 for n=1:Itnlim
+    n
     res = fnlCg(res,params);
+    if n~=1
+        old = im_res; 
+        if sum(abs(old(:)-im_res(:))) == 0;
+            imshow(flipud(abs(im_res)'),[]);
+            break; 
+        end
+    end
     im_res = XFM'*res;
     if n==Itnlim; imshow(abs(im_res),[]); end
 end
 toc
 
-figure;
-subplot(131);
-imshow(flipud(abs(im_dc)'),[]);
-subplot(132);
-imshow(flipud(abs(im_res)'),[]);
-subplot(133);
-imshow(flipud(-(abs(im_res)-abs(im_dc))'),[]);
-colorbar
-suptitle('Original undersampled           CS            Residual')
+% figure;
+% subplot(131);
+% imshow(flipud(abs(im_dc)'),[]);
+% subplot(132);
+% imshow(flipud(abs(im_res)'),[]);
+% subplot(133);
+% imshow(flipud(-(abs(im_res)-abs(im_dc))'),[]);
+% colorbar
+% suptitle('Original undersampled           CS            Residual')
 % mask_lr = genLRSampling_pctg(DN,pctg,1,0); % Creates a mask just to view a low res image
 % im_lr = ifft2c(zpad(data.*mask_lr,N(1),N(2)));
 % 
