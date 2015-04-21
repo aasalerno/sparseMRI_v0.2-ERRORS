@@ -6,7 +6,8 @@ sty = 'circ'; % Fully sampled region style
 sampFac = 0.5; % Undersampling factor
 sl = 250; % slice that we want to get
 loc = 1;
-[im,fil] = testMap(file,sty,sl,loc);
+[im2,fil] = testMap(file,sty,sl,loc);
+im = im2/max(im2(:));
 data = fft2(im);
 
 N = size(im);		% image Size
@@ -20,8 +21,8 @@ Itnlim = 30;         % Number of iterations
 % initialize Parameters for reconstruction
 phmask = zpad(hamming(6)*hamming(6)',N(1),N(2)); %mask to grab center frequency
 phmask = phmask/max(phmask(:));			 %for low-order phase estimation and correction
-ph = exp(1i*angle((ifft2c(data.*phmask))));
-
+%ph = exp(1i*angle((ifft2c(data.*phmask))));
+ph = 1;
 
 
 % generate variable density random sampling
@@ -36,7 +37,7 @@ FT = p2DFT(k,N,ph,2);
 XFM = Wavelet('Daubechies',6,4);	% Wavelet - gives a 1x1 matrix, of value 1
 %XFM = TIDCT(8,4);			% DCT
 %XFM = 1;				% Identity transform
-
+data = fftshift(FT*im);
 
 params = init;
 params.FT = FT;
